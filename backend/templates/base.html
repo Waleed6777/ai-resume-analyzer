@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}AI Resume Analyzer{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .page-shell {
+      min-height: calc(100vh - 72px);
+    }
+
+    .soft-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+    }
+
+    .soft-card-sm {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #2563eb;
+    }
+
+    .muted {
+      color: #64748b;
+    }
+
+    input[type=file]::-webkit-file-upload-button {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 12px;
+    }
+
+    input[type=file]::-webkit-file-upload-button:hover {
+      background: #1d4ed8;
+    }
+
+    @media print {
+      header, footer, .no-print {
+        display: none !important;
+      }
+
+      body {
+        background: #ffffff !important;
+      }
+
+      .soft-card,
+      .soft-card-sm {
+        box-shadow: none !important;
+      }
+    }
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+      <a href="{{ url_for('index') }}" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-brand-600 text-white flex items-center justify-center font-extrabold text-lg">
+          R
+        </div>
+
+        <div>
+          <div class="font-extrabold tracking-tight text-slate-950 leading-tight">
+            AI Resume Analyzer
+          </div>
+          <div class="text-xs text-slate-500 font-medium">
+            Flask · Gemini · PDF analysis
+          </div>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+        <a href="{{ url_for('index') }}#how" class="hover:text-brand-600">How it works</a>
+        <a href="{{ url_for('index') }}#features" class="hover:text-brand-600">Features</a>
+        <a href="{{ url_for('index') }}" class="px-4 py-2 rounded-xl bg-slate-950 text-white hover:bg-brand-700 transition">
+          Analyze Resume
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-sm text-slate-500">
+      <p>© 2026 AI Resume Analyzer. Built with Flask, pdfplumber, Gemini, and Docker.</p>
+      <p>No resume history is stored by the app.</p>
+    </div>
+  </footer>
+</body>
+</html>

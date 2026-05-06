@@ -1,0 +1,9 @@
+backend/venv/
+venv/
+__pycache__/
+*.pyc
+backend/.env
+.env
+.git/
+.gitignore
+README.md

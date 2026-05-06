@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Resume Analysis · {{ filename }}{% endblock %}
+
+{% macro score_card(label, value) -%}
+  {% set v = value if value is not none else 0 %}
+
+  <div class="border-2 border-zinc-950 bg-white p-6 hard-shadow" data-testid="score-card-{{ label|lower|replace(' ','-') }}">
+    <div class="label text-zinc-500">{{ label }}</div>
+
+    <div class="flex items-end justify-between mt-3">
+      <div class="display text-6xl text-zinc-950">
+        {{ v }}<span class="text-zinc-300 text-3xl">/100</span>
+      </div>
+
+      <div class="mono text-[11px] uppercase tracking-widest {% if v >= 80 %}text-green-600{% elif v >= 60 %}text-amber-600{% else %}text-red-600{% endif %}">
+        {% if v >= 80 %}strong{% elif v >= 60 %}okay{% else %}fix{% endif %}
+      </div>
+    </div>
+
+    <div class="mt-4 h-2 bg-zinc-100 border border-zinc-950">
+      <div class="h-full bg-zinc-950" style="width: {{ v }}%"></div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{% block content %}
+<section class="border-b-2 border-zinc-950 bg-white">
+  <div class="max-w-7xl mx-auto px-6 md:px-10 py-10 md:py-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div class="lg:col-span-7">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="label text-zinc-500">[ Analysis Complete ]</span>
+        <span class="h-px w-12 bg-zinc-300"></span>
+        <span class="mono text-[11px] uppercase tracking-widest text-red-600">{{ filename }}</span>
+      </div>
+
+      <h1 class="display text-5xl md:text-6xl">Summary.</h1>
+
+      <p class="mt-5 text-zinc-800 text-lg leading-relaxed border-l-4 border-red-600 pl-5" data-testid="verdict">
+        {{ r.verdict }}
+      </p>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="{{ url_for('index') }}"
+           class="bg-zinc-950 hover:bg-red-600 text-white py-3 px-6 mono uppercase tracking-widest font-bold text-xs transition-colors"
+           data-testid="analyze-another-btn">
+          ← Analyze another
+        </a>
+
+        <button onclick="window.print()"
+                class="bg-white border-2 border-zinc-950 text-zinc-950 hover:bg-zinc-100 py-3 px-6 mono uppercase tracking-widest font-bold text-xs transition-colors"
+                data-testid="print-btn">
+          Print / Save PDF
+        </button>
+      </div>
+    </div>
+
+    <div class="lg:col-span-5">
+      <div class="border-2 border-zinc-950 bg-zinc-950 text-white p-8 hard-shadow-red" data-testid="overall-score-card">
+        <div class="label text-red-500" style="color:#f87171">[ Overall Score ]</div>
+
+        <div class="display text-[8rem] md:text-[10rem] leading-none mt-2 text-white">
+          {{ r.overall_score|default(0) }}<span class="text-zinc-500 text-5xl">/100</span>
+        </div>
+
+        <div class="mt-4 h-3 bg-zinc-800 border border-zinc-700">
+          <div class="h-full bg-red-600" style="width: {{ r.overall_score|default(0) }}%"></div>
+        </div>
+
+        <div class="mt-4 mono text-xs uppercase tracking-widest text-zinc-300">
+          Gemini Flash · resume analysis
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 md:px-10 py-12">
+  <div class="label text-zinc-500 mb-6">[ Sub-Scores ]</div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {{ score_card('Clarity', r.scores.clarity if r.scores else 0) }}
+    {{ score_card('Relevance', r.scores.relevance if r.scores else 0) }}
+    {{ score_card('Technical Depth', r.scores.technical_depth if r.scores else 0) }}
+    {{ score_card('ATS Alignment', r.scores.ats_alignment if r.scores else 0) }}
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
+  {% set feedback_blocks = [
+    ('Clarity Feedback', r.clarity_feedback, 'clarity'),
+    ('Relevance Feedback', r.relevance_feedback, 'relevance'),
+    ('Technical Depth Feedback', r.technical_depth_feedback, 'tech')
+  ] %}
+
+  {% for title, body, key in feedback_blocks %}
+    <div class="border-2 border-zinc-950 bg-white p-6 hard-shadow" data-testid="feedback-{{ key }}">
+      <div class="label text-red-600">{{ title }}</div>
+      <p class="mt-3 text-zinc-800 leading-relaxed">{{ body or '—' }}</p>
+    </div>
+  {% endfor %}
+</section>
+
+<section class="max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
+  <div class="border-2 border-zinc-950 bg-white p-7 hard-shadow" data-testid="strengths-card">
+    <div class="flex items-center justify-between">
+      <div class="label text-zinc-500">[ Strengths ]</div>
+      <span class="mono text-[11px] uppercase tracking-widest text-green-600">keep</span>
+    </div>
+
+    <ul class="mt-4 space-y-3">
+      {% for strength in r.strengths or [] %}
+        <li class="flex gap-3 items-start">
+          <span class="mt-1 w-2 h-2 bg-green-600 shrink-0"></span>
+          <span class="text-zinc-800">{{ strength }}</span>
+        </li>
+      {% else %}
+        <li class="mono text-xs text-zinc-400">No strengths returned.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="border-2 border-zinc-950 bg-white p-7 hard-shadow" data-testid="weaknesses-card">
+    <div class="flex items-center justify-between">
+      <div class="label text-zinc-500">[ Weaknesses ]</div>
+      <span class="mono text-[11px] uppercase tracking-widest text-red-600">fix</span>
+    </div>
+
+    <ul class="mt-4 space-y-3">
+      {% for weakness in r.weaknesses or [] %}
+        <li class="flex gap-3 items-start">
+          <span class="mt-1 w-2 h-2 bg-red-600 shrink-0"></span>
+          <span class="text-zinc-800">{{ weakness }}</span>
+        </li>
+      {% else %}
+        <li class="mono text-xs text-zinc-400">No weaknesses returned.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 md:px-10 pb-12">
+  <div class="border-2 border-zinc-950 bg-white p-7 hard-shadow" data-testid="keywords-card">
+    <div class="flex items-center justify-between mb-4">
+      <div class="label text-zinc-500">[ ATS / Keyword Alignment ]</div>
+
+      {% if target_jd %}
+        <span class="mono text-[11px] uppercase tracking-widest text-red-600">Compared with job description</span>
+      {% else %}
+        <span class="mono text-[11px] uppercase tracking-widest text-zinc-400">General scan</span>
+      {% endif %}
+    </div>
+
+    <p class="text-zinc-800">{{ r.keyword_matching.summary if r.keyword_matching else '' }}</p>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <div class="mono text-[11px] uppercase tracking-widest text-green-600 mb-3">Matched</div>
+
+        <div class="flex flex-wrap gap-2">
+          {% for keyword in (r.keyword_matching.matched if r.keyword_matching else []) %}
+            <span class="px-3 py-1.5 border-2 border-green-600 bg-green-50 text-green-800 mono text-xs">{{ keyword }}</span>
+          {% else %}
+            <span class="mono text-xs text-zinc-400">— none —</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <div class="mono text-[11px] uppercase tracking-widest text-red-600 mb-3">Missing</div>
+
+        <div class="flex flex-wrap gap-2">
+          {% for keyword in (r.keyword_matching.missing if r.keyword_matching else []) %}
+            <span class="px-3 py-1.5 border-2 border-red-600 bg-red-50 text-red-700 mono text-xs">{{ keyword }}</span>
+          {% else %}
+            <span class="mono text-xs text-zinc-400">— none —</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 md:px-10 pb-12">
+  <div class="label text-zinc-500 mb-6">[ Section-by-Section ]</div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% set sec = r.section_suggestions or {} %}
+    {% set sections = [
+      ('Skills', sec.get('skills') or [], 'skills'),
+      ('Projects', sec.get('projects') or [], 'projects'),
+      ('Experience', sec.get('experience') or [], 'experience'),
+      ('Education', sec.get('education') or [], 'education')
+    ] %}
+
+    {% for title, items, key in sections %}
+      <div class="border-2 border-zinc-950 bg-white p-6 hard-shadow" data-testid="section-{{ key }}">
+        <div class="display text-2xl">{{ title }}</div>
+
+        <ul class="mt-4 space-y-3">
+          {% for item in items %}
+            <li class="flex gap-2 items-start">
+              <span class="mono text-red-600 text-xs mt-1">›</span>
+              <span class="text-zinc-800 text-sm">{{ item }}</span>
+            </li>
+          {% else %}
+            <li class="mono text-xs text-zinc-400">No specific suggestions.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if r.rewrite_examples %}
+<section class="max-w-7xl mx-auto px-6 md:px-10 pb-20">
+  <div class="label text-zinc-500 mb-6">[ Bullet Rewrites · Before → After ]</div>
+
+  <div class="space-y-6">
+    {% for example in r.rewrite_examples %}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 border-2 border-zinc-950 hard-shadow bg-white" data-testid="rewrite-example-{{ loop.index }}">
+        <div class="p-6 border-b-2 lg:border-b-0 lg:border-r-2 border-zinc-950 bg-red-50">
+          <div class="mono text-[11px] uppercase tracking-widest text-red-600">Before</div>
+          <p class="mt-2 text-zinc-800 line-through decoration-red-400/60">{{ example.before }}</p>
+        </div>
+
+        <div class="p-6 bg-white">
+          <div class="mono text-[11px] uppercase tracking-widest text-green-600">After</div>
+          <p class="mt-2 text-zinc-900 font-medium">{{ example.after }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<style>
+  @media print {
+    header, footer, .marquee {
+      display: none !important;
+    }
+
+    body {
+      background: #fff !important;
+    }
+
+    .hard-shadow,
+    .hard-shadow-lg,
+    .hard-shadow-red {
+      box-shadow: none !important;
+    }
+  }
+</style>
+{% endblock %}
